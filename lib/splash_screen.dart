@@ -12,6 +12,8 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  double _progress = 0.2;
+
   @override
   void initState() {
     super.initState();
@@ -19,8 +21,15 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void startTimer() {
-    Future.delayed(Duration(seconds: 3), () {
-      _navigateToHomeScreen();
+    Timer.periodic(Duration(seconds: 1), (Timer timer) {
+      setState(() {
+        if (_progress < 1.0) {
+          _progress += 0.2;
+        } else {
+          timer.cancel();
+          //_navigateToHomeScreen();
+        }
+      });
     });
   }
 
@@ -36,17 +45,27 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.tealAccent.shade100,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Center(child: Image.asset('assets/music_icon.jpeg')),
-          SpinKitFadingCircle(
-            color: Colors.red,
-            size: 50,
+          SizedBox(
+            height: 200,
+          ),
+          Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20), // Circular border radius
+              child: Image.asset(
+                'assets/music.png',
+                width: 300, // Adjust the size as needed
+                height: 150, // Adjust the size as needed
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
           SizedBox(
-            height: 25,
+            height: 30,
           ),
           Padding(
             padding: EdgeInsets.all(15.0),
@@ -54,25 +73,34 @@ class _SplashScreenState extends State<SplashScreen> {
               width: MediaQuery.of(context).size.width - 50,
               animation: true,
               lineHeight: 20.0,
-              animationDuration: 2000,
-              percent: 1.0,
-              center: Text("100%"),
-              linearStrokeCap: LinearStrokeCap.butt,
+              percent: _progress,
+              center: Text("${(_progress * 100).toInt()}%"),
+              linearStrokeCap: LinearStrokeCap.roundAll,
               progressColor: Colors.tealAccent.shade400,
+              backgroundColor: Colors.teal.shade100,
+              barRadius: Radius.circular(10),
             ),
           ),
           SizedBox(
             height: 30,
           ),
+          SpinKitFadingCircle(
+            color: Colors.green.shade700,
+            size: 50,
+          ),
+          SizedBox(
+            height: 25,
+          ),
           TextButton(
             onPressed: _navigateToHomeScreen,
-            child: Text(
+            child: const Text(
               "Let's Start",
               style: TextStyle(
-                color: Colors.blueAccent,
+                color: Colors.black,
                 letterSpacing: 5,
                 wordSpacing: 2,
                 fontSize: 25,
+                fontStyle: FontStyle.italic,
                 fontWeight: FontWeight.bold,
               ),
             ),

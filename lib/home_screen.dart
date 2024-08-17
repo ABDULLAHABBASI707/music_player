@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:music_player/screens/favourite_page/favourite_page.dart';
-import 'package:music_player/screens/home_page/home_page.dart';
 import 'package:music_player/screens/playlist_page/playlist_page.dart';
+import 'package:music_player/screens/music_page/music_page.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'package:music_player/screens/music_page/music_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -98,9 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
         playMusic: playMusic,
         stopMusic: stopMusic,
       ),
-      HomePage(
-        onItemTapped: _onItemTapped,
-      ),
+      HomePage(onItemTapped: _onItemTapped),
       FavoritesPage(
         favorites: favorites,
         toggleFavorite: toggleFavorite,
@@ -108,15 +105,11 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Music Player'),
-        backgroundColor: Colors.deepPurple,
-      ),
       body: pages[_selectedIndex],
       bottomNavigationBar: CurvedNavigationBar(
         backgroundColor: Colors.white,
-        color: Colors.deepPurple,
-        buttonBackgroundColor: Colors.amber,
+        color: Colors.teal,
+        buttonBackgroundColor: Colors.tealAccent.shade400,
         height: 60,
         items: <Widget>[
           Icon(Icons.music_note, size: 30, color: Colors.white),
@@ -197,5 +190,124 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       playlists.remove(playlistName);
     });
+  }
+}
+
+class HomePage extends StatelessWidget {
+  final Function(int) onItemTapped;
+
+  HomePage({required this.onItemTapped});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.teal.shade100,
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+                height: 30.0), // Adjust the height to move the "HI" text down
+            Text(
+              'HI',
+              style: TextStyle(
+                fontSize: 24.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Text(
+              'Dhoom Machalay With mp3',
+              style: TextStyle(
+                fontSize: 20.0,
+                color: Colors.black87,
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Text(
+              'What you want to hear today?',
+              style: TextStyle(
+                fontSize: 18.0,
+                color: Colors.black54,
+              ),
+            ),
+            SizedBox(height: 16.0),
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10.0,
+                mainAxisSpacing: 10.0,
+                children: [
+                  _buildGridItem(
+                    title: 'All Songs',
+                    imagePath: 'assets/allsong.jpg',
+                    onTap: () => onItemTapped(0),
+                  ),
+                  _buildGridItem(
+                    title: 'Playlists',
+                    imagePath: 'assets/playlist.png',
+                    onTap: () => onItemTapped(1),
+                  ),
+                  _buildGridItem(
+                    title: 'Favorites',
+                    imagePath: 'assets/favourite.png',
+                    onTap: () => onItemTapped(3),
+                  ),
+                  _buildGridItem(
+                    title: 'Artists',
+                    imagePath: 'assets/artist.png',
+                    onTap: () => onItemTapped(2),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGridItem({
+    required String title,
+    required String imagePath,
+    required Function onTap,
+  }) {
+    return GestureDetector(
+      onTap: () => onTap(),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.0),
+        child: Stack(
+          children: [
+            Image.asset(
+              imagePath,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            ),
+            Positioned(
+              bottom: 16.0,
+              left: 16.0,
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                  shadows: [
+                    Shadow(
+                      blurRadius: 6.0,
+                      color: Colors.black.withOpacity(0.8),
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

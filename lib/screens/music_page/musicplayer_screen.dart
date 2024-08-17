@@ -98,7 +98,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   void _showSettingsDialog() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.teal.shade800,
+      backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -109,16 +109,16 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: Icon(Icons.speed, color: Colors.white),
-                title: Text('Set Speed', style: TextStyle(color: Colors.white)),
+                leading: Icon(Icons.speed, color: Colors.black),
+                title: Text('Set Speed', style: TextStyle(color: Colors.black)),
                 onTap: () {
                   _showSpeedDialog();
                 },
               ),
               ListTile(
-                leading: Icon(Icons.timer, color: Colors.white),
+                leading: Icon(Icons.timer, color: Colors.black),
                 title: Text('Set Sleep Timer',
-                    style: TextStyle(color: Colors.white)),
+                    style: TextStyle(color: Colors.black)),
                 onTap: () {
                   _showSleepTimerDialog();
                 },
@@ -205,8 +205,9 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
       backgroundColor: Colors.black,
       body: Container(
         decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
           gradient: LinearGradient(
-            colors: [Colors.teal.shade800, Colors.tealAccent.shade400],
+            colors: [Colors.teal.shade100, Colors.teal.shade200],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -218,9 +219,13 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
               Text(
                 'Now Playing',
                 style: TextStyle(
-                    fontSize: 28,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold),
+                  wordSpacing: 2,
+                  letterSpacing: 3,
+                  fontSize: 28,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'RobotoSlab',
+                ),
               ),
               SizedBox(height: 20),
               SizedBox(
@@ -228,24 +233,30 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                 child: Marquee(
                   text: widget.songs[currentIndex].title,
                   style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                    letterSpacing: 2,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontFamily: 'RobotoSlab',
+                  ),
                   blankSpace: 100.0,
                   velocity: 30.0,
                 ),
               ),
               SizedBox(height: 20),
-              Image.asset(
-                'assets/music_icon.jpeg',
-                height: 200,
-                width: 200,
-                fit: BoxFit.cover,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(30.0),
+                child: Image.asset(
+                  'assets/allsong.jpg',
+                  height: 180,
+                  width: 330,
+                  fit: BoxFit.cover,
+                ),
               ),
               SizedBox(height: 20),
               Text(
                 widget.songs[currentIndex].artist ?? 'Unknown Artist',
-                style: TextStyle(fontSize: 20, color: Colors.white70),
+                style: TextStyle(fontSize: 20, color: Colors.black),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 20),
