@@ -280,7 +280,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
                 String playlistName = playlists[index];
                 List<SongModel> songsInPlaylist = playlistSongs[playlistName]!;
                 return Card(
-                  color: Colors.teal.shade100,
+                  color: Colors.teal.shade300,
                   margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                   child: ExpansionTile(
                     title: Text(playlistName),
