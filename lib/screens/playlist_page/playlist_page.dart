@@ -1,26 +1,25 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:music_player/screens/music_page/musicplayer_screen.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PlaylistPage extends StatefulWidget {
-  final List<String> playlists;
-  final Function(String) addPlaylist;
-  final Function(String, SongModel) addSongToPlaylist;
-  final Function(String) deletePlaylist;
   final List<SongModel> songs;
   final AudioPlayer audioPlayer;
   final Function(SongModel) playMusic;
   final Function stopMusic;
 
   PlaylistPage({
-    required this.playlists,
-    required this.addPlaylist,
-    required this.addSongToPlaylist,
-    required this.deletePlaylist,
     required this.songs,
     required this.audioPlayer,
     required this.playMusic,
     required this.stopMusic,
+    required List<String> playlists,
+    required void Function(String playlistName) addPlaylist,
+    required void Function(String playlistName) deletePlaylist,
+    required void Function(String playlistName, SongModel song)
+        addSongToPlaylist,
   });
 
   @override
@@ -30,61 +29,145 @@ class PlaylistPage extends StatefulWidget {
 class _PlaylistPageState extends State<PlaylistPage> {
   Map<String, List<SongModel>> playlistSongs = {};
   TextEditingController controller = TextEditingController();
+  List<SongModel> selectedSongs = [];
+  List<String> playlists = [];
 
   @override
   void initState() {
     super.initState();
-    for (var playlist in widget.playlists) {
-      playlistSongs[playlist] = [];
+    _loadPlaylists();
+  }
+
+  Future<void> _loadPlaylists() async {
+    final prefs = await SharedPreferences.getInstance();
+    final storedPlaylists = prefs.getStringList('playlists') ?? [];
+    setState(() {
+      playlists = storedPlaylists;
+      for (var playlist in playlists) {
+        final storedSongs = prefs.getStringList('playlist_$playlist') ?? [];
+        playlistSongs[playlist] = storedSongs.map((id) {
+          return widget.songs.firstWhere((song) => song.id.toString() == id);
+        }).toList();
+      }
+    });
+  }
+
+  Future<void> _savePlaylists() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('playlists', playlists);
+    for (var playlist in playlistSongs.keys) {
+      final songIds =
+          playlistSongs[playlist]!.map((song) => song.id.toString()).toList();
+      await prefs.setStringList('playlist_$playlist', songIds);
     }
+  }
+
+  void _toggleSelection(SongModel song) {
+    setState(() {
+      if (selectedSongs.contains(song)) {
+        selectedSongs.remove(song);
+      } else {
+        selectedSongs.add(song);
+      }
+    });
+  }
+
+  void _saveSelectedSongs(String playlistName) {
+    for (var song in selectedSongs) {
+      _addSongToPlaylist(playlistName, song);
+    }
+    selectedSongs.clear();
+    Navigator.pop(context);
+    _savePlaylists(); // Save playlists after modification
   }
 
   void _addSongToPlaylist(String playlistName, SongModel song) {
     setState(() {
       if (!playlistSongs[playlistName]!.contains(song)) {
         playlistSongs[playlistName]!.add(song);
-        // Call the function provided to add the song to the playlist
-        widget.addSongToPlaylist(playlistName, song);
       }
     });
+    _savePlaylists(); // Save playlists after modification
   }
 
   void _showAddSongDialog(String playlistName) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) {
-        return AlertDialog(
-          title: Text('Add Song to $playlistName'),
-          content: Container(
-            width: double.maxFinite,
-            child: ListView.builder(
-              itemCount: widget.songs.length,
-              itemBuilder: (context, songIndex) {
-                SongModel song = widget.songs[songIndex];
-                return ListTile(
-                  leading: QueryArtworkWidget(
-                    id: song.id,
-                    type: ArtworkType.AUDIO,
-                    artworkFit: BoxFit.cover,
-                    artworkBorder: BorderRadius.circular(40),
-                    artworkClipBehavior: Clip.antiAlias,
-                    nullArtworkWidget: CircleAvatar(
-                      backgroundColor: Colors.teal,
-                      child: Icon(Icons.music_note, color: Colors.white),
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.9,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Select song to add in playlist',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            _saveSelectedSongs(playlistName);
+                          },
+                          child: Text('Save'),
+                        ),
+                      ],
                     ),
                   ),
-                  title: Text(song.title),
-                  subtitle: Text(song.artist ?? 'Unknown Artist'),
-                  trailing: IconButton(
-                    icon: Icon(Icons.add, color: Colors.teal),
-                    onPressed: () {
-                      _addSongToPlaylist(playlistName, song);
-                      Navigator.pop(context); // Close the dialog after adding
-                    },
+                  Expanded(
+                    child: widget.songs.isNotEmpty
+                        ? ListView.builder(
+                            itemCount: widget.songs.length,
+                            itemBuilder: (context, songIndex) {
+                              SongModel song = widget.songs[songIndex];
+                              bool isSelected = selectedSongs.contains(song);
+                              return ListTile(
+                                leading: QueryArtworkWidget(
+                                  id: song.id,
+                                  type: ArtworkType.AUDIO,
+                                  artworkFit: BoxFit.cover,
+                                  artworkBorder: BorderRadius.circular(40),
+                                  artworkClipBehavior: Clip.antiAlias,
+                                  nullArtworkWidget: CircleAvatar(
+                                    backgroundColor: Colors.teal,
+                                    child: Icon(Icons.music_note,
+                                        color: Colors.white),
+                                  ),
+                                ),
+                                title: Text(song.title),
+                                subtitle: Text(song.artist ?? 'Unknown Artist'),
+                                trailing: Icon(
+                                  isSelected
+                                      ? Icons.check_circle
+                                      : Icons.check_circle_outline,
+                                  color: isSelected ? Colors.teal : Colors.grey,
+                                ),
+                                onTap: () {
+                                  setState(() {
+                                    _toggleSelection(song);
+                                  });
+                                },
+                              );
+                            },
+                          )
+                        : Center(
+                            child: Text('No songs available'),
+                          ),
                   ),
-                );
-              },
-            ),
+                ],
+              );
+            },
           ),
         );
       },
@@ -108,10 +191,11 @@ class _PlaylistPageState extends State<PlaylistPage> {
               onPressed: () {
                 if (controller.text.isNotEmpty) {
                   String newPlaylistName = controller.text;
-                  widget.addPlaylist(newPlaylistName);
                   setState(() {
+                    playlists.add(newPlaylistName);
                     playlistSongs[newPlaylistName] = [];
                   });
+                  _savePlaylists(); // Save playlists after creation
                   controller.clear();
                   Navigator.pop(context);
                 }
@@ -127,12 +211,11 @@ class _PlaylistPageState extends State<PlaylistPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.teal.shade100,
+      backgroundColor: Colors.tealAccent.shade100,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(height: 70),
-          // Text section
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
@@ -167,7 +250,6 @@ class _PlaylistPageState extends State<PlaylistPage> {
               ],
             ),
           ),
-          // Image with circular border radius
           Container(
             height: 180,
             width: 330,
@@ -179,42 +261,81 @@ class _PlaylistPageState extends State<PlaylistPage> {
               ),
             ),
           ),
-          // Button to create a new playlist
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton(
               onPressed: _showCreatePlaylistDialog,
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
-                backgroundColor: Colors.teal, // Text color
+                backgroundColor: Colors.teal,
                 padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              child: Text('Add Playlist'),
+              child: Text('Create Playlist'),
             ),
           ),
-          // Display playlists
           Expanded(
             child: ListView.builder(
-              itemCount: widget.playlists.length,
+              itemCount: playlists.length,
               itemBuilder: (context, index) {
-                String playlistName = widget.playlists[index];
+                String playlistName = playlists[index];
+                List<SongModel> songsInPlaylist = playlistSongs[playlistName]!;
                 return Card(
+                  color: Colors.teal.shade100,
                   margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                  child: ListTile(
+                  child: ExpansionTile(
                     title: Text(playlistName),
                     leading: Icon(Icons.playlist_play, color: Colors.teal),
                     trailing: IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
+                      icon: Icon(Icons.delete, color: Colors.black),
                       onPressed: () {
-                        widget.deletePlaylist(playlistName);
                         setState(() {
+                          playlists.remove(playlistName);
                           playlistSongs.remove(playlistName);
                         });
+                        _savePlaylists(); // Save playlists after deletion
                       },
                     ),
-                    onTap: () {
-                      _showAddSongDialog(
-                          playlistName); // Show the dialog to add songs when the playlist is tapped
+                    children: songsInPlaylist.isNotEmpty
+                        ? songsInPlaylist.map((song) {
+                            return ListTile(
+                              leading: QueryArtworkWidget(
+                                id: song.id,
+                                type: ArtworkType.AUDIO,
+                                artworkFit: BoxFit.cover,
+                                artworkBorder: BorderRadius.circular(20),
+                                artworkClipBehavior: Clip.antiAlias,
+                                nullArtworkWidget: CircleAvatar(
+                                  backgroundColor: Colors.teal,
+                                  child: Icon(Icons.music_note,
+                                      color: Colors.white),
+                                ),
+                              ),
+                              title: Text(song.title),
+                              subtitle: Text(song.artist ?? 'Unknown Artist'),
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MusicPlayerScreen(
+                                        song: songsInPlaylist[index],
+                                        songs: songsInPlaylist,
+                                        audioPlayer: widget.audioPlayer,
+                                        playMusic: widget.playMusic,
+                                        stopMusic: widget.stopMusic,
+                                      ),
+                                    ));
+                              },
+                            );
+                          }).toList()
+                        : [
+                            ListTile(
+                              title: Text('No songs in this playlist'),
+                            )
+                          ],
+                    onExpansionChanged: (isExpanded) {
+                      if (isExpanded && songsInPlaylist.isEmpty) {
+                        _showAddSongDialog(playlistName);
+                      }
                     },
                   ),
                 );

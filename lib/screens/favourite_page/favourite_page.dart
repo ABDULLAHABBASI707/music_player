@@ -13,6 +13,7 @@ class FavoritesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.teal.shade200,
       appBar: AppBar(
         title: Center(
           child: Text(
@@ -20,7 +21,7 @@ class FavoritesPage extends StatelessWidget {
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
         ),
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.teal.shade200,
       ),
       body: Column(
         children: [

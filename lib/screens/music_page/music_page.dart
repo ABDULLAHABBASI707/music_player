@@ -116,7 +116,7 @@ class _MusicPageState extends State<MusicPage>
                   fillColor: Colors.tealAccent.shade100, // Fill color
                   contentPadding: EdgeInsets.symmetric(vertical: 15.0),
                 ),
-                style: TextStyle(color: Colors.white), // Text color
+                style: TextStyle(color: Colors.black), // Text color
               ),
             ),
             Padding(

@@ -221,8 +221,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                 style: TextStyle(
                   wordSpacing: 2,
                   letterSpacing: 3,
-                  fontSize: 28,
-                  color: Colors.white,
+                  fontSize: 25,
+                  color: Colors.black,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'RobotoSlab',
                 ),
@@ -234,9 +234,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                   text: widget.songs[currentIndex].title,
                   style: TextStyle(
                     letterSpacing: 2,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    fontSize: 23,
+                    color: Colors.black87,
                     fontFamily: 'RobotoSlab',
                   ),
                   blankSpace: 100.0,
@@ -255,7 +254,9 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
               ),
               SizedBox(height: 20),
               Text(
-                widget.songs[currentIndex].artist ?? 'Unknown Artist',
+                widget.songs[currentIndex].artist?.isNotEmpty == true
+                    ? widget.songs[currentIndex].artist!
+                    : 'Unknown Artist',
                 style: TextStyle(fontSize: 20, color: Colors.black),
                 textAlign: TextAlign.center,
               ),
