@@ -211,7 +211,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.tealAccent.shade100,
+      backgroundColor: Colors.teal.shade200,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -284,9 +284,9 @@ class _PlaylistPageState extends State<PlaylistPage> {
                   margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                   child: ExpansionTile(
                     title: Text(playlistName),
-                    leading: Icon(Icons.playlist_play, color: Colors.teal),
+                    leading: Icon(Icons.playlist_play, color: Colors.white),
                     trailing: IconButton(
-                      icon: Icon(Icons.delete, color: Colors.black),
+                      icon: Icon(Icons.delete, color: Colors.white),
                       onPressed: () {
                         setState(() {
                           playlists.remove(playlistName);
